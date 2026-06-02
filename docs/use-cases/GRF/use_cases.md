@@ -18,24 +18,29 @@
 # CU-01 Enviar Mensaje a Residentes
 
 ## Descripción
-Permite al Administrador enviar mensajes dirigidos únicamente a los residentes del condominio.
+Permite al Administrador enviar mensajes dirigidos únicamente a los residentes del condominio, comunicar información relevante relacionada con la administración del condominio.
 
 ## Actor Principal
 Administrador
 
 ## Precondiciones
-- El Administrador debe haber iniciado sesión.
-- Deben existir residentes registrados.
+- El Administrador debe haber iniciado sesión en el sistema.
+- Deben existir residentes registrados dentro del sistema de gestión del condominio.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
 1. El Administrador ingresa al módulo de comunicación.
-2. Selecciona la opción de enviar mensaje a residentes.
-3. Ingresa el contenido del mensaje.
-4. El sistema valida la información.
-5. El sistema envía el mensaje.
+2. El sistema muestra las opciones disponibles de mensajería.
+3. El Administrador selecciona la opción de enviar mensaje a residentes.
+4. El Administrador redacta el asunto y el contenido del mensaje.
+5. El sistema valida que la información ingresada sea correcta.
+6. El sistema envía el mensaje a los residentes correspondientes.
+7. El sistema registra el envío dentro del historial de comunicaciones.
 
 ## Postcondiciones
-- El mensaje queda registrado correctamente.
+- El mensaje queda enviado a los residentes correspondientes.
+- El mensaje queda almacenado dentro del historial de comunicaciones del sistema.
+- El sistema conserva la fecha y hora del envío realizado.
 
 ---
 
@@ -48,17 +53,23 @@ Permite al Administrador enviar comunicados dirigidos a los trabajadores del con
 Administrador
 
 ## Precondiciones
-- El Administrador debe haber iniciado sesión.
-- Deben existir trabajadores registrados.
+- El Administrador debe haber iniciado sesión en el sistema.
+- Deben existir trabajadores registrados dentro del sistema de gestión del condominio.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El Administrador selecciona la opción de enviar comunicado.
-2. Ingresa el contenido del comunicado.
-3. El sistema valida los datos.
-4. El sistema envía el comunicado.
+1. El Administrador ingresa al módulo de comunicación.
+2. El sistema muestra las opciones disponibles de comunicación.
+3. El Administrador selecciona la opción de enviar comunicado a trabajadores.
+4. El Administrador redacta el asunto y el contenido del comunicado.
+5. El sistema valida la información ingresada.
+6. El sistema envía el comunicado a los trabajadores correspondientes.
+7. El sistema registra el comunicado dentro del historial de comunicaciones.
 
 ## Postcondiciones
-- El comunicado queda registrado correctamente.
+- El comunicado queda enviado a los trabajadores correspondientes.
+- El comunicado queda almacenado dentro del historial de comunicaciones del sistema.
+- El sistema conserva la fecha y hora del envío realizado.
 
 ---
 
@@ -71,165 +82,212 @@ Permite al Administrador enviar mensajes generales a residentes y trabajadores d
 Administrador
 
 ## Precondiciones
-- Deben existir usuarios registrados en el sistema.
+- El Administrador debe haber iniciado sesión en el sistema.
+- Deben existir usuarios registrados dentro del sistema de gestión del condominio.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El Administrador selecciona mensaje global.
-2. Ingresa el contenido del mensaje.
-3. El sistema valida la información.
-4. El sistema envía el mensaje a todos los usuarios.
+1. El Administrador ingresa al módulo de comunicación.
+2. El sistema muestra las opciones disponibles de mensajería.
+3. El Administrador selecciona la opción de enviar mensaje global.
+4. El Administrador redacta el asunto y el contenido del mensaje.
+5. El sistema valida que la información ingresada sea correcta.
+6. El sistema envía el mensaje a todos los usuarios correspondientes.
+7. El sistema registra el mensaje global dentro del historial de comunicaciones.
 
 ## Postcondiciones
-- El mensaje global queda registrado correctamente.
+- El mensaje global queda enviado a residentes y trabajadores.
+- El mensaje queda almacenado dentro del historial de comunicaciones del sistema.
+- El sistema conserva la fecha y hora del envío realizado.
 
 ---
 
 # CU-04 Crear Anuncio General
 
 ## Descripción
-Permite al Administrador publicar anuncios generales para todo el condominio.
+Permite al Administrador publicar anuncios generales para los usuarios del condominio.
 
 ## Actor Principal
 Administrador
 
 ## Precondiciones
-- El Administrador debe haber iniciado sesión.
+- El Administrador debe haber iniciado sesión en el sistema.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El Administrador selecciona crear anuncio.
-2. Ingresa el contenido del anuncio.
-3. El sistema valida la información.
-4. El sistema publica el anuncio.
+1. El Administrador ingresa al módulo de comunicación.
+2. El sistema muestra la opción de gestión de anuncios generales.
+3. El Administrador selecciona la opción de crear anuncio general.
+4. El Administrador ingresa el título y contenido del anuncio.
+5. El sistema valida que la información ingresada sea correcta.
+6. El sistema publica el anuncio general.
+7. El sistema registra la creación del anuncio dentro del historial de comunicaciones.
 
 ## Postcondiciones
-- El anuncio queda disponible para los usuarios.
+- El anuncio general queda publicado dentro del sistema.
+- El anuncio queda disponible para los usuarios correspondientes.
+- El sistema conserva un registro de la fecha y hora de publicación.
 
 ---
 
 # CU-05 Modificar Anuncio General
 
 ## Descripción
-Permite modificar anuncios generales previamente publicados.
+Permite al Administrador modificar anuncios generales publicados previamente, con el fin de corregir, actualizar o complementar información comunicada a los usuarios del condominio.
 
 ## Actor Principal
 Administrador
 
 ## Precondiciones
-- Debe existir un anuncio registrado.
+- El Administrador debe haber iniciado sesión en el sistema.
+- Debe existir al menos un anuncio general registrado dentro del sistema.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El Administrador selecciona un anuncio.
-2. Modifica la información.
-3. El sistema valida los cambios.
-4. El sistema actualiza el anuncio.
+1. El Administrador ingresa al módulo de comunicación.
+2. El sistema muestra la lista de anuncios generales registrados.
+3. El Administrador selecciona el anuncio que desea modificar.
+4. El Administrador edita el título o contenido del anuncio.
+5. El sistema valida los cambios realizados.
+6. El sistema actualiza el anuncio general.
+7. El sistema registra la modificación realizada.
 
 ## Postcondiciones
-- El anuncio queda actualizado correctamente.
+- El anuncio general queda actualizado correctamente.
+- El sistema guarda los cambios realizados.
+- El sistema conserva un registro de la fecha y hora de modificación.
 
 ---
 
 # CU-06 Eliminar Anuncio General
 
 ## Descripción
-Permite eliminar anuncios generales registrados en el sistema.
+Permite al Administrador eliminar anuncios generales publicados previamente cuando la información ya no sea necesaria, esté desactualizada o no deba permanecer visible para los usuarios.
 
 ## Actor Principal
 Administrador
 
 ## Precondiciones
-- Debe existir un anuncio registrado.
+- El Administrador debe haber iniciado sesión en el sistema.
+- Debe existir al menos un anuncio general registrado dentro del sistema.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El Administrador selecciona un anuncio.
-2. Solicita la eliminación.
-3. El sistema pide confirmación.
-4. El Administrador confirma la acción.
-5. El sistema elimina el anuncio.
+1. El Administrador ingresa al módulo de comunicación.
+2. El sistema muestra la lista de anuncios generales registrados.
+3. El Administrador selecciona el anuncio que desea eliminar.
+4. El sistema solicita confirmación antes de eliminar el anuncio.
+5. El Administrador confirma la eliminación.
+6. El sistema elimina el anuncio general seleccionado.
+7. El sistema registra la eliminación realizada.
 
 ## Postcondiciones
-- El anuncio deja de estar disponible.
+- El anuncio general deja de estar disponible para los usuarios.
+- El sistema actualiza la lista de anuncios generales.
+- El sistema conserva un registro de la eliminación realizada.
 
 ---
 
 # CU-07 Crear Reporte de Comunicación
 
 ## Descripción
-Permite generar reportes relacionados con mensajes y anuncios enviados.
-
+Permite al Administrador generar reportes sobre mensajes, comunicados y anuncios enviados dentro del sistema.
 ## Actor Principal
 Administrador
 
 ## Precondiciones
-- Deben existir registros de comunicación.
+- El Administrador debe haber iniciado sesión en el sistema.
+- Deben existir registros de comunicación dentro del sistema.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El Administrador selecciona generar reporte.
-2. Define filtros de búsqueda.
-3. El sistema consulta la información.
-4. El sistema genera el reporte.
+1. El Administrador ingresa al módulo de comunicación.
+2. El sistema muestra la opción de reportes de comunicación.
+3. El Administrador selecciona los filtros del reporte.
+4. El sistema consulta los registros de comunicación disponibles.
+5. El sistema genera el reporte solicitado.
+6. El Administrador visualiza el reporte generado.
 
 ## Postcondiciones
-- El reporte queda disponible para consulta.
+- El reporte de comunicación queda generado correctamente.
+- El Administrador puede revisar la información de mensajes, comunicados y anuncios.
+- El sistema mantiene disponibles los registros consultados.
 
 ---
 
 # CU-08 Consultar Historial de Mensajes
 
 ## Descripción
-El Administrador puede consultar el historial general de comunicaciones, mientras que los residentes y trabajadores pueden consultar únicamente los mensajes o comunicados dirigidos a ellos.
+Permite consultar el historial de mensajes, comunicados y anuncios registrados en el sistema. El Administrador puede consultar el historial general de comunicaciones, mientras que los residentes y trabajadores pueden consultar únicamente los mensajes o comunicados dirigidos a ellos.
 
 ## Actor Principal
 Administrador, Residente, Trabajador
 
 ## Precondiciones
-- Deben existir mensajes registrados.
+- El usuario debe haber iniciado sesión en el sistema.
+- Deben existir mensajes, comunicados o anuncios registrados dentro del sistema.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El usuario accede al historial de mensajes.
-2. Selecciona filtros de consulta.
-3. El sistema muestra los mensajes registrados.
+1. El usuario ingresa al módulo de comunicación.
+2. El sistema muestra la opción de consultar historial de mensajes.
+3. El usuario selecciona los filtros de consulta disponibles.
+4. El sistema valida los permisos del usuario.
+5. El sistema muestra los mensajes, comunicados o anuncios correspondientes según el rol del usuario.
 
 ## Postcondiciones
-- El historial queda visualizado correctamente.
+- El historial de mensajes queda visualizado correctamente.
+- El usuario accede únicamente a la información permitida según su rol.
+- El sistema mantiene protegida la información que no corresponde al usuario.
 
 ---
 
 # CU-09 Registrar Historial de Comunicaciones
 
 ## Descripción
-Permite almacenar el historial de mensajes y anuncios realizados dentro del sistema.
+Permite al sistema almacenar automáticamente el historial de mensajes, comunicados y anuncios realizados dentro del módulo de comunicación.
 
 ## Actor Principal
 Sistema
 
 ## Precondiciones
-- Debe existir actividad de comunicación.
+- Debe existir una acción de comunicación realizada dentro del sistema.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El sistema detecta una acción de comunicación.
-2. Guarda la información correspondiente.
-3. Actualiza el historial.
+1. El sistema detecta una acción de comunicación realizada.
+2. El sistema identifica el tipo de comunicación registrada.
+3. El sistema almacena la información correspondiente.
+4. El sistema actualiza el historial de comunicaciones.
 
 ## Postcondiciones
-- El historial queda actualizado.
+- La comunicación queda almacenada dentro del historial del sistema.
+- El historial de comunicaciones queda actualizado.
+- El sistema conserva la información necesaria para futuras consultas o reportes.
 
 ---
 
 # CU-10 Notificar Mensaje Recibido
 
 ## Descripción
-Permite al sistema notificar cuando un usuario recibe un mensaje o comunicado.
+Permite al sistema notificar automáticamente a los usuarios cuando reciben un mensaje, comunicado o anuncio.
 
 ## Actor Principal
 Sistema
 
 ## Precondiciones
-- Debe existir un mensaje enviado.
+- Debe existir un mensaje, comunicado o anuncio enviado dentro del sistema.
+- Debe existir al menos un destinatario registrado dentro del sistema.
+- El módulo de comunicación debe encontrarse disponible.
 
 ## Flujo Principal
-1. El sistema detecta un nuevo mensaje.
-2. Genera una notificación.
-3. Envía la notificación al destinatario.
+1. El sistema detecta un nuevo mensaje, comunicado o anuncio enviado.
+2. El sistema identifica a los destinatarios correspondientes.
+3. El sistema genera la notificación respectiva.
+4. El sistema envía la notificación a los usuarios destinatarios.
+5. El sistema registra la notificación realizada.
 
 ## Postcondiciones
-- El usuario recibe la notificación correctamente.
+- Los usuarios destinatarios reciben la notificación correspondiente.
+- El sistema registra la notificación generada.
+- La comunicación queda disponible para consulta dentro del sistema.
