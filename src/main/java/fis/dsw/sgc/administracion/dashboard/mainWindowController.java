@@ -131,7 +131,6 @@ public class mainWindowController {
     @FXML void irAGenerarReporteGastos(ActionEvent event)         { cargarVista("/finanzas/fxml/pendiente.fxml");         }
     @FXML void irASolicitarPagoEnCuotas(ActionEvent event)         { cargarVista("/finanzas/fxml/pendiente.fxml");         }
     @FXML void irAGenerarCertificadoNoDeudor(ActionEvent event)         { cargarVista("/finanzas/fxml/pendiente.fxml");         }
-    @FXML void irAConsultarPagos(ActionEvent event)         { cargarVista("/finanzas/fxml/pendiente.fxml");         }
     @FXML void irAConsultarReporteRendicionCuentas(ActionEvent event)         { cargarVista("/finanzas/fxml/pendiente.fxml");         }
     @FXML void irAGenerarReportePagosInternos(ActionEvent event)     { cargarVista("/finanzas/fxml/generarReportePagosRealizados.fxml"); }
 
