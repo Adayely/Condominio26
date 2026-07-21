@@ -73,6 +73,17 @@
 
             <Separator />
 
+            <Label styleClass="section-title" text="PROPIETARIO" />
+            <VBox spacing="4.0">
+               <children>
+                  <Label styleClass="field-label" text="PROPIETARIO" />
+                  <ComboBox fx:id="cmbPropietario" maxWidth="1.7976931348623157E308" promptText="Seleccione un propietario" />
+                  <Label styleClass="field-hint" text="Opcional, puede asignarlo después desde Editar Inmueble" />
+               </children>
+            </VBox>
+
+            <Separator />
+
             <Label styleClass="section-title" text="UBICACIÓN Y CARACTERÍSTICAS" />
 
             <GridPane hgap="18.0" vgap="14.0">

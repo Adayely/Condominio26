@@ -14,11 +14,21 @@ public interface IInmueblesService {
 
     List<OpcionComboDTO> obtenerTiposInmueble();
 
-    void registrarInmueble(Inmueble inmueble);
+    /** Registra el inmueble y devuelve el id generado. */
+    int registrarInmueble(Inmueble inmueble);
 
     Inmueble buscarInmueblePorCodigo(String codigo);
 
     void actualizarInmueble(Inmueble inmueble);
+
+    /** Lista de usuarios que se pueden asignar como propietarios de un inmueble. */
+    List<OpcionComboDTO> obtenerPropietarios();
+
+    /** Id del propietario principal activo del inmueble, o null si no tiene. */
+    Integer obtenerPropietarioActual(int idInmueble);
+
+    /** Asigna al usuario indicado como propietario principal. Si idUsuario es null, se lo quita. */
+    void asignarPropietario(int idInmueble, Integer idUsuario);
 
     /**
      * Registra un caso fortuito (incidente imprevisto) para un inmueble.

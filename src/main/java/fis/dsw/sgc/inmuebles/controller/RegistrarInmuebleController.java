@@ -20,6 +20,7 @@ public class RegistrarInmuebleController {
     @FXML private TextField txtCodigo;
     @FXML private ComboBox<OpcionComboDTO> cmbEdificio;
     @FXML private ComboBox<OpcionComboDTO> cmbTipoInmueble;
+    @FXML private ComboBox<OpcionComboDTO> cmbPropietario;
     @FXML private TextField txtPiso;
     @FXML private TextField txtNumero;
     @FXML private TextField txtAreaM2;
@@ -33,10 +34,17 @@ public class RegistrarInmuebleController {
     private final IInmuebleDAO inmuebleDAO = new InmuebleDAOMySQL();
     private final IInmueblesService inmueblesService = new InmueblesServiceImpl(inmuebleDAO);
 
+    private static final OpcionComboDTO SIN_PROPIETARIO = new OpcionComboDTO(0, "Sin propietario");
+
     @FXML
     public void initialize() {
         cmbEdificio.setItems(FXCollections.observableArrayList(inmueblesService.obtenerEdificios()));
         cmbTipoInmueble.setItems(FXCollections.observableArrayList(inmueblesService.obtenerTiposInmueble()));
+
+        cmbPropietario.getItems().add(SIN_PROPIETARIO);
+        cmbPropietario.getItems().addAll(inmueblesService.obtenerPropietarios());
+        cmbPropietario.setValue(SIN_PROPIETARIO);
+
         setMensaje("Complete los datos del inmueble y pulse Registrar.", "message-info");
     }
 
@@ -63,7 +71,12 @@ public class RegistrarInmuebleController {
             inmueble.setDisponibleVenta(chkVenta.isSelected());
             inmueble.setEstado("DISPONIBLE");
 
-            inmueblesService.registrarInmueble(inmueble);
+            int idNuevoInmueble = inmueblesService.registrarInmueble(inmueble);
+
+            OpcionComboDTO propietarioSeleccionado = cmbPropietario.getValue();
+            if (propietarioSeleccionado != null && propietarioSeleccionado.getId() != 0) {
+                inmueblesService.asignarPropietario(idNuevoInmueble, propietarioSeleccionado.getId());
+            }
 
             setMensaje("Inmueble '" + inmueble.getCodigo() + "' registrado exitosamente.", "message-success");
             limpiar(event);
@@ -89,6 +102,7 @@ public class RegistrarInmuebleController {
         txtDescripcion.clear();
         chkAlquiler.setSelected(false);
         chkVenta.setSelected(false);
+        cmbPropietario.setValue(SIN_PROPIETARIO);
     }
 
     private String texto(String valor) {

@@ -22,6 +22,7 @@ public class EditarInmuebleController {
     @FXML private TextField txtCodigo;
     @FXML private ComboBox<OpcionComboDTO> cmbEdificio;
     @FXML private ComboBox<OpcionComboDTO> cmbTipoInmueble;
+    @FXML private ComboBox<OpcionComboDTO> cmbPropietario;
     @FXML private TextField txtPiso;
     @FXML private TextField txtNumero;
     @FXML private TextField txtAreaM2;
@@ -38,12 +39,17 @@ public class EditarInmuebleController {
 
     private Inmueble inmuebleActual;
 
+    private static final OpcionComboDTO SIN_PROPIETARIO = new OpcionComboDTO(0, "Sin propietario");
+
     @FXML
     public void initialize() {
         cmbEdificio.setItems(FXCollections.observableArrayList(inmueblesService.obtenerEdificios()));
         cmbTipoInmueble.setItems(FXCollections.observableArrayList(inmueblesService.obtenerTiposInmueble()));
         cmbEstado.setItems(FXCollections.observableArrayList(
                 "DISPONIBLE", "OCUPADO", "EN_MANTENIMIENTO", "EN_REMODELACION", "INACTIVO"));
+
+        cmbPropietario.getItems().add(SIN_PROPIETARIO);
+        cmbPropietario.getItems().addAll(inmueblesService.obtenerPropietarios());
 
         habilitarFormulario(false);
         setMensaje("Ingrese el código del inmueble y pulse Buscar.", "message-info");
@@ -103,6 +109,11 @@ public class EditarInmuebleController {
 
             inmueblesService.actualizarInmueble(inmuebleActual);
 
+            OpcionComboDTO propietarioSeleccionado = cmbPropietario.getValue();
+            Integer idPropietario = (propietarioSeleccionado == null || propietarioSeleccionado.getId() == 0)
+                    ? null : propietarioSeleccionado.getId();
+            inmueblesService.asignarPropietario(inmuebleActual.getIdInmueble(), idPropietario);
+
             setMensaje("Inmueble '" + inmuebleActual.getCodigo() + "' actualizado exitosamente.", "message-success");
 
         } catch (IllegalArgumentException e) {
@@ -131,6 +142,13 @@ public class EditarInmuebleController {
         } else {
             cmbEdificio.getSelectionModel().clearSelection();
         }
+
+        Integer idPropietarioActual = inmueblesService.obtenerPropietarioActual(inmueble.getIdInmueble());
+        if (idPropietarioActual != null) {
+            seleccionarOpcion(cmbPropietario, idPropietarioActual);
+        } else {
+            cmbPropietario.setValue(SIN_PROPIETARIO);
+        }
     }
 
     private void seleccionarOpcion(ComboBox<OpcionComboDTO> combo, int id) {
@@ -155,6 +173,7 @@ public class EditarInmuebleController {
         txtDescripcion.clear();
         chkAlquiler.setSelected(false);
         chkVenta.setSelected(false);
+        cmbPropietario.setValue(SIN_PROPIETARIO);
         inmuebleActual = null;
     }
 
@@ -171,6 +190,7 @@ public class EditarInmuebleController {
         chkAlquiler.setDisable(!habilitar);
         chkVenta.setDisable(!habilitar);
         cmbEstado.setDisable(!habilitar);
+        cmbPropietario.setDisable(!habilitar);
     }
 
     private String texto(String valor) {

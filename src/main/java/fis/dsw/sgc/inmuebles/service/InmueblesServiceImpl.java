@@ -42,7 +42,7 @@ public class InmueblesServiceImpl implements IInmueblesService {
     }
 
     @Override
-    public void registrarInmueble(Inmueble inmueble) {
+    public int registrarInmueble(Inmueble inmueble) {
         if (inmueble.getCodigo() == null || inmueble.getCodigo().isBlank()) {
             throw new IllegalArgumentException("El código del inmueble es obligatorio.");
         }
@@ -55,7 +55,7 @@ public class InmueblesServiceImpl implements IInmueblesService {
         if (inmueble.getEstado() == null || inmueble.getEstado().isBlank()) {
             inmueble.setEstado("DISPONIBLE");
         }
-        inmuebleDAO.guardar(inmueble);
+        return inmuebleDAO.guardar(inmueble);
     }
 
     @Override
@@ -84,6 +84,25 @@ public class InmueblesServiceImpl implements IInmueblesService {
             inmueble.setEstado("DISPONIBLE");
         }
         inmuebleDAO.actualizar(inmueble);
+    }
+
+    @Override
+    public List<OpcionComboDTO> obtenerPropietarios() {
+        return inmuebleDAO.listarPropietariosDisponibles();
+    }
+
+    @Override
+    public Integer obtenerPropietarioActual(int idInmueble) {
+        return inmuebleDAO.obtenerIdPropietario(idInmueble);
+    }
+
+    @Override
+    public void asignarPropietario(int idInmueble, Integer idUsuario) {
+        if (idUsuario == null) {
+            inmuebleDAO.quitarPropietario(idInmueble);
+        } else {
+            inmuebleDAO.asignarPropietario(idInmueble, idUsuario);
+        }
     }
 
     @Override

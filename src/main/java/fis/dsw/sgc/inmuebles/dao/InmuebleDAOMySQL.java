@@ -1,11 +1,5 @@
 package fis.dsw.sgc.inmuebles.dao;
 
-import fis.dsw.sgc.conexion_bd.DBConnection;
-import fis.dsw.sgc.inmuebles.dto.InmuebleResumenDTO;
-import fis.dsw.sgc.inmuebles.dto.OpcionComboDTO;
-import fis.dsw.sgc.inmuebles.model.Inmueble;
-import fis.dsw.sgc.inmuebles.dto.OpcionComboDTO;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +7,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import fis.dsw.sgc.conexion_bd.DBConnection;
+import fis.dsw.sgc.inmuebles.dto.InmuebleResumenDTO;
+import fis.dsw.sgc.inmuebles.dto.OpcionComboDTO;
+import fis.dsw.sgc.inmuebles.model.Inmueble;
 
 public class InmuebleDAOMySQL implements IInmuebleDAO {
 
@@ -100,13 +98,13 @@ public class InmuebleDAOMySQL implements IInmuebleDAO {
     }
 
     @Override
-    public void guardar(Inmueble inmueble) {
+    public int guardar(Inmueble inmueble) {
         String sql = "INSERT INTO inmueble (id_edificio, id_tipo_inmueble, codigo, piso, numero, " +
                 "area_m2, numero_habitaciones, numero_banos, descripcion, disponible_alquiler, " +
                 "disponible_venta, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = DBConnection.getInstance().getConnection();
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             pstmt.setObject(1, inmueble.getIdEdificio());
             pstmt.setInt(2, inmueble.getIdTipoInmueble());
             pstmt.setString(3, inmueble.getCodigo());
@@ -120,9 +118,16 @@ public class InmuebleDAOMySQL implements IInmuebleDAO {
             pstmt.setInt(11, inmueble.isDisponibleVenta() ? 1 : 0);
             pstmt.setString(12, inmueble.getEstado());
             pstmt.executeUpdate();
+
+            try (ResultSet keys = pstmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    return keys.getInt(1);
+                }
+            }
         } catch (SQLException e) {
             System.err.println("Error al guardar inmueble: " + e.getMessage());
         }
+        return -1;
     }
 
     @Override
@@ -174,8 +179,6 @@ public class InmuebleDAOMySQL implements IInmuebleDAO {
     public List<InmuebleResumenDTO> buscarResumen(String filtro) {
         List<InmuebleResumenDTO> resultado = new ArrayList<>();
 
-        // LEFT JOIN a edificio (puede ser null en parqueaderos/espacios comunes sueltos)
-        // y a usuario_inmueble/usuario para traer al propietario principal activo.
         String sql = "SELECT i.id_inmueble, i.codigo, i.piso, i.numero, i.estado, " +
                 "       ti.nombre AS tipo, " +
                 "       ed.nombre AS nombre_edificio, " +
@@ -226,6 +229,85 @@ public class InmuebleDAOMySQL implements IInmuebleDAO {
         }
 
         return resultado;
+    }
+
+    @Override
+    public List<OpcionComboDTO> listarPropietariosDisponibles() {
+        List<OpcionComboDTO> resultado = new ArrayList<>();
+        String sql = "SELECT id_usuario, nombres, apellidos, numero_documento FROM usuario " +
+                "WHERE estado = 'ACTIVO' ORDER BY nombres, apellidos";
+
+        Connection conn = DBConnection.getInstance().getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                String nombreCompleto = rs.getString("nombres") + " " + rs.getString("apellidos")
+                        + " - " + rs.getString("numero_documento");
+                resultado.add(new OpcionComboDTO(rs.getInt("id_usuario"), nombreCompleto));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al listar propietarios disponibles: " + e.getMessage());
+        }
+        return resultado;
+    }
+
+    @Override
+    public Integer obtenerIdPropietario(int idInmueble) {
+        String sql = "SELECT id_usuario FROM usuario_inmueble WHERE id_inmueble = ? " +
+                "AND tipo_relacion = 'PROPIETARIO' AND estado = 'ACTIVO' AND es_principal = 1 " +
+                "ORDER BY fecha_inicio DESC LIMIT 1";
+
+        Connection conn = DBConnection.getInstance().getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idInmueble);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id_usuario");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener propietario del inmueble: " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public void asignarPropietario(int idInmueble, int idUsuario) {
+        Connection conn = DBConnection.getInstance().getConnection();
+
+        String sqlCerrar = "UPDATE usuario_inmueble SET estado = 'INACTIVO', fecha_fin = CURRENT_DATE " +
+                "WHERE id_inmueble = ? AND tipo_relacion = 'PROPIETARIO' AND es_principal = 1 AND estado = 'ACTIVO'";
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlCerrar)) {
+            pstmt.setInt(1, idInmueble);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error al cerrar propietario anterior: " + e.getMessage());
+            return;
+        }
+
+        String sqlInsertar = "INSERT INTO usuario_inmueble (id_usuario, id_inmueble, tipo_relacion, " +
+                "es_principal, estado) VALUES (?, ?, 'PROPIETARIO', 1, 'ACTIVO')";
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlInsertar)) {
+            pstmt.setInt(1, idUsuario);
+            pstmt.setInt(2, idInmueble);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error al asignar propietario: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void quitarPropietario(int idInmueble) {
+        String sql = "UPDATE usuario_inmueble SET estado = 'INACTIVO', fecha_fin = CURRENT_DATE " +
+                "WHERE id_inmueble = ? AND tipo_relacion = 'PROPIETARIO' AND es_principal = 1 AND estado = 'ACTIVO'";
+
+        Connection conn = DBConnection.getInstance().getConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, idInmueble);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error al quitar propietario: " + e.getMessage());
+        }
     }
 
     private Inmueble mapearInmueble(ResultSet rs) throws SQLException {

@@ -86,6 +86,16 @@
 
             <Separator />
 
+            <Label styleClass="section-title" text="PROPIETARIO" />
+            <VBox spacing="4.0">
+               <children>
+                  <Label styleClass="field-label" text="PROPIETARIO" />
+                  <ComboBox fx:id="cmbPropietario" maxWidth="1.7976931348623157E308" promptText="Seleccione un propietario" />
+               </children>
+            </VBox>
+
+            <Separator />
+
             <Label styleClass="section-title" text="UBICACIÓN Y CARACTERÍSTICAS" />
 
             <GridPane hgap="18.0" vgap="14.0">
@@ -136,15 +146,14 @@
             <Separator />
 
             <Label styleClass="section-title" text="DISPONIBILIDAD Y ESTADO" />
-
-            <HBox alignment="CENTER_LEFT" spacing="30.0">
+            <HBox spacing="30.0">
                <children>
                   <CheckBox fx:id="chkAlquiler" text="Disponible para alquiler" textFill="#2b2b2b" />
                   <CheckBox fx:id="chkVenta" text="Disponible para venta" textFill="#2b2b2b" />
                </children>
             </HBox>
 
-            <VBox spacing="4.0" maxWidth="260.0">
+            <VBox spacing="4.0">
                <children>
                   <Label styleClass="field-label" text="ESTADO" />
                   <ComboBox fx:id="cmbEstado" maxWidth="1.7976931348623157E308" promptText="Seleccione un estado" />
@@ -153,11 +162,7 @@
 
             <Label fx:id="lblMensaje" styleClass="message-label" text=" " wrapText="true" />
 
-            <HBox spacing="10.0">
-               <children>
-                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardar" styleClass="primary-button" text="Guardar cambios" HBox.hgrow="ALWAYS" />
-               </children>
-            </HBox>
+            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#guardar" styleClass="primary-button" text="Guardar cambios" />
 
          </children>
       </VBox>
