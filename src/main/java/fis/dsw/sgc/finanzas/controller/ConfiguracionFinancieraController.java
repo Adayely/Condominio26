@@ -1,7 +1,6 @@
 package fis.dsw.sgc.finanzas.controller;
 
 import fis.dsw.sgc.finanzas.dto.EntidadBancariaDTO;
-import fis.dsw.sgc.finanzas.service.ConfiguracionFinancieraService;
 import fis.dsw.sgc.finanzas.service.IConfiguracionFinancieraService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -50,8 +49,15 @@ public class ConfiguracionFinancieraController {
     @FXML private TableColumn<EntidadBancariaDTO, String> colCorreoTitular;
 
     private final ObservableList<EntidadBancariaDTO> entidades = FXCollections.observableArrayList();
-    private double valorActualAlicuota = 45.00;
-    private final IConfiguracionFinancieraService configuracionFinancieraService = new ConfiguracionFinancieraService();
+
+    // Conexión Controller -> Service: el service llega inyectado por constructor (no se instancia aquí)
+    private final IConfiguracionFinancieraService configuracionFinancieraService;
+    private double valorActualAlicuota;
+
+    // Inyección de dependencias: quien cargue este controlador (FXMLLoader + setController) debe pasar el service
+    public ConfiguracionFinancieraController(IConfiguracionFinancieraService configuracionFinancieraService) {
+        this.configuracionFinancieraService = configuracionFinancieraService;
+    }
 
     @FXML
     public void initialize() {
@@ -72,7 +78,10 @@ public class ConfiguracionFinancieraController {
         placeholder.setMaxWidth(420);
         tablaEntidades.setPlaceholder(placeholder);
 
+        // Carga inicial: se trae del Service el valor de alícuotas y las entidades ya registradas
+        valorActualAlicuota = configuracionFinancieraService.consultarValorMensualDeAlicuotas();
         actualizarValorActual();
+        entidades.setAll(configuracionFinancieraService.listarEntidadesBancarias());
     }
 
     // ==================== Valor mensual de alícuotas ====================
@@ -88,9 +97,8 @@ public class ConfiguracionFinancieraController {
             return;
         }
 
+        // Llamado al Service: envía el valor validado y recibe de vuelta el valor ya registrado
         valorActualAlicuota = configuracionFinancieraService.definirValorMensualDeAlicuotas(Double.parseDouble(texto));
-        // Datos de prueba (comentado, por si se necesita reactivar la simulación local sin el Service):
-        // valorActualAlicuota = Double.parseDouble(texto);
         actualizarValorActual();
         txtNuevoValorAlicuota.clear();
         setMensaje(lblMensajeAlicuota, "El valor mensual esperado de alicuotas se registró correctamente", "message-success");
@@ -156,10 +164,9 @@ public class ConfiguracionFinancieraController {
             return;
         }
 
+        // Llamado al Service: envía el DTO armado con los datos del formulario y recibe de vuelta el DTO ya registrado
         EntidadBancariaDTO nuevaEntidad = new EntidadBancariaDTO(nombreEntidad, numeroCuenta, cedulaTitular, tipoCuenta, correoTitular);
         entidades.add(configuracionFinancieraService.registrarEntidadBancaria(nuevaEntidad));
-        // Datos de prueba (comentado, por si se necesita reactivar la simulación local sin el Service):
-        // entidades.add(new EntidadBancariaDTO(nombreEntidad, numeroCuenta, cedulaTitular, tipoCuenta, correoTitular));
         setMensaje(lblMensajeEntidad, "Entidad bancaria registrada correctamente", "message-success");
         limpiarFormularioEntidad(null);
     }
