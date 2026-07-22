@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
 public class GenerarReporteGastosController implements Initializable {
@@ -36,13 +37,14 @@ public class GenerarReporteGastosController implements Initializable {
     @FXML private Button btnGuardar;
     @FXML private Button btnLimpiar;
 
-    // 1. Parametrizando correctamente las columnas con tu DetalleGastoDTO
-    @FXML private TableColumn<DetalleGastoDTO, String> colDescripcion;
+    // 1. Mapping de las 4 columnas de la tabla
     @FXML private TableColumn<DetalleGastoDTO, String> colMotivo;
+    @FXML private TableColumn<DetalleGastoDTO, String> colDescripcion;
+    @FXML private TableColumn<DetalleGastoDTO, LocalDate> colFecha;
     @FXML private TableColumn<DetalleGastoDTO, Double> colValor;
 
-    @FXML private DatePicker dpFechaFin;
     @FXML private DatePicker dpFechaInicio;
+    @FXML private DatePicker dpFechaFin;
 
     @FXML private Label lblIconoAgua;
     @FXML private Label lblIconoFechas;
@@ -74,19 +76,42 @@ public class GenerarReporteGastosController implements Initializable {
         LocalDate fechaInicio = dpFechaInicio.getValue();
         LocalDate fechaFin = dpFechaFin.getValue();
 
+        // Escenario Alterno 1: Validación de ingreso/existencia de fechas
         if (fechaInicio == null || fechaFin == null) {
-            mostrarAlerta("Error de validación", "Por favor, seleccione ambas fechas.", Alert.AlertType.WARNING);
+            mostrarAlerta("Formato de fechas incorrecto", "Formato de fechas incorrecto, ingrese la fecha en formato DD/MM/YYYY", Alert.AlertType.WARNING);
+            return;
+        }
+
+        LocalDate fechaActual = LocalDate.now();
+
+        // Escenario Alterno 2: La fecha de inicio tiene que ser menor que la fecha actual
+        if (!fechaInicio.isBefore(fechaActual)) {
+            mostrarAlerta("Error en Fechas", "La fecha de inicio tiene que ser menor que la fecha actual", Alert.AlertType.WARNING);
+            return;
+        }
+
+        // Escenario Alterno 3: La fecha de inicio debe ser menor que la fecha de fin
+        if (!fechaInicio.isBefore(fechaFin)) {
+            mostrarAlerta("Error en Fechas", "La fecha de fin tiene que ser mayor que la fecha de inicio", Alert.AlertType.WARNING);
+            return;
+        }
+
+        // Escenario Alterno 4: La fecha de fin debe ser menor o igual a la fecha actual
+        if (fechaFin.isAfter(fechaActual)) {
+            mostrarAlerta("Error en Fechas", "La fecha de fin tiene que ser menor o igual a la fecha actual", Alert.AlertType.WARNING);
             return;
         }
 
         try {
-            // 4. Llamada al Service utilizando el nombre del caso de uso
+            // 4. Ejecución del caso de uso desde el Service
             ReporteGastosDTO reporte = reportesService.generarReporteGastos(fechaInicio, fechaFin);
 
-            // 1. Llenar la tabla con la lista de Detalles que envía el Service
-            tbReporteGastos.getItems().setAll(reporte.detalles);
+            // 1. Poblado de los datos en la tabla (las 4 columnas)
+            if (reporte.detalles != null) {
+                tbReporteGastos.getItems().setAll(reporte.detalles);
+            }
 
-            // 2. Colocar la información en los txt respectivos
+            // 2. Asignación de los datos entregados por el reporte en sus txtRespectivos
             txtTotalAgua.setText(String.format("%.2f", reporte.totalAgua));
             txtTotalLuz.setText(String.format("%.2f", reporte.totalLuz));
             txtTotalTelefono.setText(String.format("%.2f", reporte.totalTelefono));
@@ -94,62 +119,69 @@ public class GenerarReporteGastosController implements Initializable {
             txtTotalSueldos.setText(String.format("%.2f", reporte.totalSueldos));
             txtTotalOtros.setText(String.format("%.2f", reporte.totalOtros));
 
-            // Calculo extra para el total de servicios basicos agrupado
-            double totalServiciosBasicos = reporte.totalAgua + reporte.totalLuz + reporte.totalTelefono + reporte.totalInternet;
-            txtTotalServiciosBasicos.setText(String.format("%.2f", totalServiciosBasicos));
+            // Total de servicios básicos (Agua + Luz + Teléfono + Internet)
+            double totalServicios = reporte.totalAgua + reporte.totalLuz + reporte.totalTelefono + reporte.totalInternet;
+            txtTotalServiciosBasicos.setText(String.format("%.2f", totalServicios));
 
             txtTotalGastos.setText(String.format("%.2f", reporte.totalGeneral));
 
-            // Cumpliendo con el caso de uso: emitir mensaje
+            // Escenario Básico: Mensaje final según el requisito
             mostrarAlerta("Éxito", "Reporte generado correctamente", Alert.AlertType.INFORMATION);
 
-        } catch (Exception e) { // Atrapa la FechasInvalidasException o cualquier otra del Service
-            mostrarAlerta("Error en la consulta", e.getMessage(), Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            mostrarAlerta("Error al generar reporte", e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     void descargarReporte(ActionEvent event) {
-        // 7. Descargar reportes en dos archivos CSV básicos
+        // 7. Descargar reporte en dos archivos CSV (detalles y resumen de totales)
         if (tbReporteGastos.getItems().isEmpty()) {
-            mostrarAlerta("Sin datos", "No hay un reporte generado para descargar.", Alert.AlertType.WARNING);
+            mostrarAlerta("Sin datos", "No existen registros en la tabla para descargar.", Alert.AlertType.WARNING);
             return;
         }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
         try {
-            // CSV Detalles
+            // Generación de CSV con los detalles (incluyendo Fecha)
             File archivoDetalles = new File("reporte_gastos_detalles.csv");
             try (PrintWriter writer = new PrintWriter(archivoDetalles)) {
-                writer.println("Motivo,Descripcion,Valor");
+                writer.println("MOTIVO,DESCRIPCION,FECHA,VALOR");
                 for (DetalleGastoDTO detalle : tbReporteGastos.getItems()) {
-                    writer.printf("%s,%s,%.2f\n", detalle.motivo, detalle.descripcion, detalle.valor);
+                    String fechaStr = (detalle.fecha != null) ? detalle.fecha.format(formatter) : "";
+                    writer.printf("%s,%s,%s,%.2f\n",
+                            detalle.motivo != null ? detalle.motivo : "",
+                            detalle.descripcion != null ? detalle.descripcion : "",
+                            fechaStr,
+                            detalle.valor != null ? detalle.valor : 0.0);
                 }
             }
 
-            // CSV Totales
+            // Generación de CSV con los totales consignados
             File archivoTotales = new File("reporte_gastos_totales.csv");
             try (PrintWriter writer = new PrintWriter(archivoTotales)) {
-                writer.println("Categoria,Total");
-                writer.println("Agua," + txtTotalAgua.getText());
-                writer.println("Luz," + txtTotalLuz.getText());
-                writer.println("Telefono," + txtTotalTelefono.getText());
-                writer.println("Internet," + txtTotalInternet.getText());
-                writer.println("Servicios Basicos," + txtTotalServiciosBasicos.getText());
-                writer.println("Sueldos," + txtTotalSueldos.getText());
-                writer.println("Otros," + txtTotalOtros.getText());
-                writer.println("Total General," + txtTotalGastos.getText());
+                writer.println("CONCEPTO,VALOR");
+                writer.println("Total Agua," + txtTotalAgua.getText());
+                writer.println("Total Luz," + txtTotalLuz.getText());
+                writer.println("Total Telefono," + txtTotalTelefono.getText());
+                writer.println("Total Internet," + txtTotalInternet.getText());
+                writer.println("Total Servicios Basicos," + txtTotalServiciosBasicos.getText());
+                writer.println("Total Sueldos," + txtTotalSueldos.getText());
+                writer.println("Total Otros," + txtTotalOtros.getText());
+                writer.println("Total Gastos Generales," + txtTotalGastos.getText());
             }
 
-            mostrarAlerta("Descarga Exitosa", "Archivos CSV generados correctamente en la raíz del proyecto.", Alert.AlertType.INFORMATION);
+            mostrarAlerta("Descarga completada", "Los archivos CSV fueron descargados con éxito.", Alert.AlertType.INFORMATION);
 
         } catch (Exception e) {
-            mostrarAlerta("Error de exportación", "Hubo un problema al crear los archivos: " + e.getMessage(), Alert.AlertType.ERROR);
+            mostrarAlerta("Error de exportación", "Error al crear los archivos de descarga: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
     @FXML
     void limpiarReporte(ActionEvent event) {
-        // 8. Limpia la tabla y deja vacíos los textFields y DatePickers
+        // 8. Deja vacíos la tabla, los textfields y los filtros de fecha
         tbReporteGastos.getItems().clear();
 
         txtTotalAgua.clear();
@@ -167,12 +199,13 @@ public class GenerarReporteGastosController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Mapeo seguro de columnas hacia las propiedades del DTO (Evita problemas al no tener getters explícitos)
+        // 1 y 3. Mapeo seguro directo hacia los atributos del DetalleGastoDTO
         colMotivo.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().motivo));
         colDescripcion.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().descripcion));
+        colFecha.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().fecha));
         colValor.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().valor));
 
-        // 6. Carga de los iconos que enviaste
+        // 6. Carga y preservación de iconos de la interfaz
         FontIcon icon = new FontIcon("fa-external-link");
         icon.getStyleClass().add("titleIcon");
         lblIconoGastos.setGraphic(icon);
@@ -229,7 +262,6 @@ public class GenerarReporteGastosController implements Initializable {
         lblTotalGastos.setGraphic(icon11);
     }
 
-    // Método auxiliar para no repetir código de generación de alertas
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
