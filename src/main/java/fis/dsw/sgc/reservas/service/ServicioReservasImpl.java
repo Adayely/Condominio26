@@ -1,6 +1,7 @@
 package fis.dsw.sgc.reservas.service;
 
 import fis.dsw.sgc.conexion_bd.DBConnection;
+import fis.dsw.sgc.finanzas.dto.NuevaDeudaDTO;
 import fis.dsw.sgc.finanzas.service.IFachadaParaReservas;
 import fis.dsw.sgc.reservas.dao.EspacioReservableDAOSQLite;
 import fis.dsw.sgc.reservas.dao.IEspacioReservableDAO;
@@ -153,8 +154,9 @@ public class ServicioReservasImpl implements IServicioReservas {
             String descripcion = "Reserva de "
                     + (espacio != null ? espacio.getNombre() : "espacio comun")
                     + " (" + fecha + " " + horaInicio + "-" + horaFin + ")";
-            fachadaFinanzas.registrarDeuda(cedula, "RESERVA", fechaMaximaPago,
-                    descripcion, costoCentavos / 100.0);
+            fachadaFinanzas.registrarDeuda(
+                    new NuevaDeudaDTO(cedula, "RESERVA", fechaMaximaPago,
+                            descripcion, costoCentavos / 100.0));
         }
 
         return true;
